@@ -10,6 +10,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.r2dbc.connection.init.CompositeDatabasePopulator;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication
 @EnableR2dbcRepositories
@@ -23,6 +24,12 @@ public class TesteAulaApplication {
         populator.addPopulators(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
         initializer.setDatabasePopulator(populator);
         return initializer;
+    }
+
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder()
+                .build();
     }
 
 

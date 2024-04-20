@@ -14,7 +14,6 @@ import java.time.Duration;
 public class RecommendationService {
 
 
-
     public Flux<Book> getRecommendations(Long bookId) {
         return Flux.range(1, 100) // Simula 100 recomendações
                 .map(this::createRecommendation)
