@@ -13,7 +13,7 @@ import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 
 @SpringBootApplication
 @EnableR2dbcRepositories
-@ComponentScan({"com.example.testeaula.repository","com.example.testeaula.controller"})
+@ComponentScan({"br.unipe.reactiveclass.repository","br.unipe.reactiveclass.controller", "br.unipe.reactiveclass.service"})
 public class TesteAulaApplication {
     @Bean
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
