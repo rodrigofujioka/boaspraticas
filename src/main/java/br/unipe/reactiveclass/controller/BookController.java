@@ -1,18 +1,24 @@
 package br.unipe.reactiveclass.controller;
 
 // Controlador REST (Exemplo: BookController.java)
+import br.unipe.reactiveclass.dto.BookInfoWithRecommendationsDTO;
 import br.unipe.reactiveclass.model.Book;
 import br.unipe.reactiveclass.repository.BookRepository;
+import br.unipe.reactiveclass.service.RecommendationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.BufferOverflowStrategy;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/books")
 @AllArgsConstructor
 public class BookController {
 
+    private final RecommendationService recommendationService;
     private final BookRepository bookRepository;
 
 
@@ -50,5 +56,26 @@ public class BookController {
     @DeleteMapping("/{id}")
     public Mono<Void> deleteBook(@PathVariable Long id) {
         return bookRepository.deleteById(id);
+    }
+
+
+    @GetMapping("/books/{id}/recommendations")
+    public Mono<BookInfoWithRecommendationsDTO> getBookWithRecommendations(@PathVariable Long id) {
+        return bookRepository.findById(id)
+                .flatMap(book -> recommendationService.getRecommendations(book.getId())
+                        .onBackpressureBuffer(10) // Bufferiza até 10 itens
+                        .collectList()
+                        .map(recommendations -> new BookInfoWithRecommendationsDTO(book, recommendations)));
+    }
+
+    @GetMapping("/books/{id}/recommendations/error-handling")
+    public Mono<BookInfoWithRecommendationsDTO> getBookWithRecommendationsExpcetion(@PathVariable Long id) {
+        return bookRepository.findById(id)
+                .flatMap(book -> recommendationService.getRecommendations(book.getId())
+                        .onBackpressureBuffer(10,
+                                BufferOverflowStrategy.DROP_OLDEST) // Define a estratégia de overflow
+                        .collectList()
+                        .map(recommendations -> new BookInfoWithRecommendationsDTO(book, recommendations)))
+                .onErrorResume(e -> Mono.just(new BookInfoWithRecommendationsDTO(new Book(id, "Unknown", "Unknown"), Collections.emptyList()))); // Tratamento simplificado de erro
     }
 }
